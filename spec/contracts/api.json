@@ -1,0 +1,83 @@
+{
+  "api": "Inventory Hold Service",
+  "baseUrl": "/api",
+  "endpoints": {
+    "POST /api/holds": {
+      "description": "Create a new inventory hold",
+      "request": {
+        "body": {
+          "holdId": "string (GUID, optional — server generates if omitted)",
+          "items": [
+            {
+              "productId": "string (GUID, required)",
+              "quantity": "integer > 0, required"
+            }
+          ],
+          "durationMinutes": "integer, optional, default: 15"
+        }
+      },
+      "response": {
+        "201": {
+          "holdId": "string",
+          "items": [
+            {
+              "productId": "string",
+              "productName": "string",
+              "quantity": "integer"
+            }
+          ],
+          "status": "Active",
+          "createdAt": "string (ISO 8601)",
+          "expiresAt": "string (ISO 8601)"
+        },
+        "400": "Validation error (missing items, invalid quantities)",
+        "409": "Insufficient stock for one or more products"
+      }
+    },
+    "GET /api/holds/{holdId}": {
+      "description": "Get a hold by ID",
+      "pathParameters": {
+        "holdId": "string (GUID)"
+      },
+      "response": {
+        "200": {
+          "holdId": "string",
+          "items": "array of { productId, productName, quantity }",
+          "status": "Active | Released | Expired",
+          "createdAt": "string",
+          "expiresAt": "string",
+          "releasedAt": "string | null"
+        },
+        "404": "Hold not found"
+      }
+    },
+    "DELETE /api/holds/{holdId}": {
+      "description": "Release a hold and restore inventory",
+      "pathParameters": {
+        "holdId": "string (GUID)"
+      },
+      "response": {
+        "200": {
+          "message": "Hold released successfully",
+          "holdId": "string"
+        },
+        "404": "Hold not found",
+        "410": "Hold already released or expired"
+      }
+    },
+    "GET /api/inventory": {
+      "description": "Get current inventory levels",
+      "response": {
+        "200": [
+          {
+            "productId": "string",
+            "productName": "string",
+            "availableQuantity": "integer",
+            "reservedQuantity": "integer",
+            "totalQuantity": "integer"
+          }
+        ]
+      }
+    }
+  }
+}

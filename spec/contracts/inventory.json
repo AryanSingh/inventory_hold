@@ -1,0 +1,36 @@
+{
+  "entity": "InventoryItem",
+  "collection": "inventory",
+  "schema": {
+    "productId": "string (GUID format)",
+    "productName": "string",
+    "availableQuantity": "integer (>= 0)",
+    "reservedQuantity": "integer (>= 0)",
+    "totalQuantity": "integer (>= 0)",
+    "updatedAt": "DateTime UTC"
+  },
+  "operations": {
+    "seed": {
+      "description": "Insert 5 products if collection is empty",
+      "initialData": [
+        { "productId": "550e8400-e29b-41d4-a716-446655440001", "productName": "Wireless Mouse", "availableQuantity": 50, "reservedQuantity": 0, "totalQuantity": 50 },
+        { "productId": "550e8400-e29b-41d4-a716-446655440002", "productName": "Mechanical Keyboard", "availableQuantity": 30, "reservedQuantity": 0, "totalQuantity": 30 },
+        { "productId": "550e8400-e29b-41d4-a716-446655440003", "productName": "USB-C Hub", "availableQuantity": 100, "reservedQuantity": 0, "totalQuantity": 100 },
+        { "productId": "550e8400-e29b-41d4-a716-446655440004", "productName": "Monitor Stand", "availableQuantity": 25, "reservedQuantity": 0, "totalQuantity": 25 },
+        { "productId": "550e8400-e29b-41d4-a716-446655440005", "productName": "Webcam HD", "availableQuantity": 75, "reservedQuantity": 0, "totalQuantity": 75 }
+      ]
+    },
+    "decryAvailability": {
+      "description": "Atomic decrement of availableQuantity, increment of reservedQuantity",
+      "filter": { "productId": "{productId}", "availableQuantity": { "$gte": "{quantity}" } },
+      "update": { "$inc": { "availableQuantity": -{quantity}, "reservedQuantity": +{quantity} }, "$set": { "updatedAt": "now" } },
+      "atomic": true
+    },
+    "restoreAvailability": {
+      "description": "Atomic increment of availableQuantity, decrement of reservedQuantity",
+      "filter": { "productId": "{productId}" },
+      "update": { "$inc": { "availableQuantity": +{quantity}, "reservedQuantity": -{quantity} }, "$set": { "updatedAt": "now" } },
+      "atomic": true
+    }
+  }
+}

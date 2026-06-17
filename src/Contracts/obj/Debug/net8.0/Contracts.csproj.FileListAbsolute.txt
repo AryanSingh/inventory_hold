@@ -1,0 +1,11 @@
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Contracts/bin/Debug/net8.0/Contracts.deps.json
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Contracts/bin/Debug/net8.0/Contracts.dll
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Contracts/bin/Debug/net8.0/Contracts.pdb
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Contracts/obj/Debug/net8.0/Contracts.GeneratedMSBuildEditorConfig.editorconfig
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Contracts/obj/Debug/net8.0/Contracts.AssemblyInfoInputs.cache
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Contracts/obj/Debug/net8.0/Contracts.AssemblyInfo.cs
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Contracts/obj/Debug/net8.0/Contracts.csproj.CoreCompileInputs.cache
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Contracts/obj/Debug/net8.0/Contracts.dll
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Contracts/obj/Debug/net8.0/refint/Contracts.dll
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Contracts/obj/Debug/net8.0/Contracts.pdb
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Contracts/obj/Debug/net8.0/ref/Contracts.dll

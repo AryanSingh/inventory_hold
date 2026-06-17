@@ -1,0 +1,58 @@
+{
+  "exchange": "hold.events",
+  "exchangeType": "fanout",
+  "events": {
+    "HoldCreated": {
+      "routingKey": "hold.created",
+      "headers": {
+        "event_type": "HoldCreated"
+      },
+      "payload": {
+        "holdId": "string (GUID)",
+        "items": [
+          {
+            "productId": "string",
+            "productName": "string",
+            "quantity": "integer"
+          }
+        ],
+        "createdAt": "string (ISO 8601)",
+        "expiresAt": "string (ISO 8601)"
+      }
+    },
+    "HoldReleased": {
+      "routingKey": "hold.released",
+      "headers": {
+        "event_type": "HoldReleased"
+      },
+      "payload": {
+        "holdId": "string (GUID)",
+        "items": [
+          {
+            "productId": "string",
+            "productName": "string",
+            "quantity": "integer"
+          }
+        ],
+        "releasedAt": "string (ISO 8601)"
+      }
+    },
+    "HoldExpired": {
+      "routingKey": "hold.expired",
+      "headers": {
+        "event_type": "HoldExpired"
+      },
+      "payload": {
+        "holdId": "string (GUID)",
+        "items": [
+          {
+            "productId": "string",
+            "productName": "string",
+            "quantity": "integer"
+          }
+        ],
+        "expiredAt": "string (ISO 8601)"
+      }
+    }
+  }
+}

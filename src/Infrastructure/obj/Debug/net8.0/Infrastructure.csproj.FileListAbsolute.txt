@@ -1,0 +1,17 @@
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/bin/Debug/net8.0/Infrastructure.deps.json
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/bin/Debug/net8.0/Infrastructure.dll
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/bin/Debug/net8.0/Infrastructure.pdb
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/bin/Debug/net8.0/Contracts.dll
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/bin/Debug/net8.0/Domain.dll
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/bin/Debug/net8.0/Domain.pdb
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/bin/Debug/net8.0/Contracts.pdb
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/obj/Debug/net8.0/Infrastructure.csproj.AssemblyReference.cache
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/obj/Debug/net8.0/Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/obj/Debug/net8.0/Infrastructure.AssemblyInfoInputs.cache
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/obj/Debug/net8.0/Infrastructure.AssemblyInfo.cs
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/obj/Debug/net8.0/Infrastructure.csproj.CoreCompileInputs.cache
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/obj/Debug/net8.0/Infrastr.15EFFBFE.Up2Date
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/obj/Debug/net8.0/Infrastructure.dll
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/obj/Debug/net8.0/refint/Infrastructure.dll
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/obj/Debug/net8.0/Infrastructure.pdb
+/Users/aryansingh/Documents/Claude/Projects/inventory-hold-service/src/Infrastructure/obj/Debug/net8.0/ref/Infrastructure.dll

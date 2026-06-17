@@ -1,0 +1,281 @@
+{
+  "version": "1.0",
+  "project": "Inventory Hold Microservice",
+  "methodology": "Software Factory - Small Batches (≤150 LOC/task)",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": ".NET Solution Skeleton + Contracts",
+      "tasks": [
+        {
+          "id": "T1.1",
+          "name": "Create solution file and project structure",
+          "loc": 0,
+          "depends": [],
+          "files": ["InventoryHold.sln"],
+          "description": "Create solution file, add project references"
+        },
+        {
+          "id": "T1.2",
+          "name": "Create Contracts project with DTOs",
+          "loc": 80,
+          "depends": ["T1.1"],
+          "files": [
+            "src/Contracts/Contracts.csproj",
+            "src/Contracts/InventoryItemDto.cs",
+            "src/Contracts/HoldDto.cs",
+            "src/Contracts/CreateHoldRequest.cs",
+            "src/Contracts/Events.cs"
+          ],
+          "description": "DTOs matching spec/contracts JSON schemas"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Domain Layer",
+      "tasks": [
+        {
+          "id": "T2.1",
+          "name": "Create Domain project with entities",
+          "loc": 100,
+          "depends": ["T1.2"],
+          "files": [
+            "src/Domain/Domain.csproj",
+            "src/Domain/Entities/InventoryItem.cs",
+            "src/Domain/Entities/Hold.cs",
+            "src/Domain/ValueObjects/Quantity.cs"
+          ],
+          "description": "Domain entities with business rules, no infrastructure deps"
+        },
+        {
+          "id": "T2.2",
+          "name": "Create Domain interfaces",
+          "loc": 60,
+          "depends": ["T2.1"],
+          "files": [
+            "src/Domain/Interfaces/IInventoryRepository.cs",
+            "src/Domain/Interfaces/IHoldRepository.cs",
+            "src/Domain/Interfaces/IEventPublisher.cs",
+            "src/Domain/Interfaces/ICacheService.cs"
+          ],
+          "description": "Repository and service interfaces (ports)"
+        },
+        {
+          "id": "T2.3",
+          "name": "Create domain services",
+          "loc": 120,
+          "depends": ["T2.2"],
+          "files": [
+            "src/Domain/Services/HoldService.cs",
+            "src/Domain/Services/InventoryService.cs"
+          ],
+          "description": "Business logic: create/release holds, check inventory"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Infrastructure Layer",
+      "tasks": [
+        {
+          "id": "T3.1",
+          "name": "MongoDB repositories",
+          "loc": 150,
+          "depends": ["T2.2"],
+          "files": [
+            "src/Infrastructure/Infrastructure.csproj",
+            "src/Infrastructure/MongoDb/InventoryRepository.cs",
+            "src/Infrastructure/MongoDb/HoldRepository.cs",
+            "src/Infrastructure/MongoDb/MongoDbContext.cs"
+          ],
+          "description": "MongoDB implementations with atomic $inc operations"
+        },
+        {
+          "id": "T3.2",
+          "name": "Redis cache service",
+          "loc": 80,
+          "depends": ["T2.2"],
+          "files": [
+            "src/Infrastructure/Cache/RedisCacheService.cs"
+          ],
+          "description": "Cache-aside pattern with Redis"
+        },
+        {
+          "id": "T3.3",
+          "name": "RabbitMQ event publisher",
+          "loc": 70,
+          "depends": ["T2.2"],
+          "files": [
+            "src/Infrastructure/Messaging/RabbitMqPublisher.cs"
+          ],
+          "description": "Fanout exchange publisher for hold events"
+        },
+        {
+          "id": "T3.4",
+          "name": "Background hold expiration service",
+          "loc": 100,
+          "depends": ["T2.3", "T3.1"],
+          "files": [
+            "src/Infrastructure/Background/HoldExpirationService.cs"
+          ],
+          "description": "Hosted service polling expired holds every 30s"
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "WebApi Layer",
+      "tasks": [
+        {
+          "id": "T4.1",
+          "name": "Create WebApi project with Program.cs",
+          "loc": 100,
+          "depends": ["T3.1", "T3.2", "T3.3"],
+          "files": [
+            "src/WebApi/WebApi.csproj",
+            "src/WebApi/Program.cs",
+            "src/WebApi/DependencyInjection.cs"
+          ],
+          "description": "Minimal API host with DI registration"
+        },
+        {
+          "id": "T4.2",
+          "name": "Create controllers",
+          "loc": 150,
+          "depends": ["T4.1"],
+          "files": [
+            "src/WebApi/Controllers/InventoryController.cs",
+            "src/WebApi/Controllers/HoldController.cs"
+          ],
+          "description": "REST endpoints matching API contract"
+        },
+        {
+          "id": "T4.3",
+          "name": "Seed data + health checks",
+          "loc": 80,
+          "depends": ["T4.1"],
+          "files": [
+            "src/WebApi/SeedData.cs",
+            "src/WebApi/HealthChecks.cs"
+          ],
+          "description": "MongoDB seed data for 5 products, health check endpoints"
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Unit Tests",
+      "tasks": [
+        {
+          "id": "T5.1",
+          "name": "Create test project + mock-based tests",
+          "loc": 150,
+          "depends": ["T2.3"],
+          "files": [
+            "tests/UnitTests/UnitTests.csproj",
+            "tests/UnitTests/HoldServiceTests.cs",
+            "tests/UnitTests/InventoryServiceTests.cs"
+          ],
+          "description": "xUnit tests with Moq, min 5 test cases"
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "name": "Docker Configuration",
+      "tasks": [
+        {
+          "id": "T6.1",
+          "name": "Dockerfile + docker-compose.yml",
+          "loc": 80,
+          "depends": ["T4.2"],
+          "files": [
+            "Dockerfile",
+            "docker-compose.yml"
+          ],
+          "description": ".NET API + MongoDB + Redis + RabbitMQ containers"
+        }
+      ]
+    },
+    {
+      "id": "phase-7",
+      "name": "React Frontend",
+      "tasks": [
+        {
+          "id": "T7.1",
+          "name": "Initialize React/Vite/TypeScript project",
+          "loc": 0,
+          "depends": ["T6.1"],
+          "files": ["frontend/package.json", "frontend/vite.config.ts", "frontend/tsconfig.json"],
+          "description": "Vite + React + TypeScript scaffold"
+        },
+        {
+          "id": "T7.2",
+          "name": "API client + types",
+          "loc": 80,
+          "depends": ["T7.1"],
+          "files": [
+            "frontend/src/api/client.ts",
+            "frontend/src/api/types.ts"
+          ],
+          "description": "Typed API client for backend endpoints"
+        },
+        {
+          "id": "T7.3",
+          "name": "Inventory Dashboard component",
+          "loc": 100,
+          "depends": ["T7.2"],
+          "files": ["frontend/src/components/InventoryDashboard.tsx"],
+          "description": "Table showing all inventory items"
+        },
+        {
+          "id": "T7.4",
+          "name": "Create Hold form",
+          "loc": 100,
+          "depends": ["T7.2"],
+          "files": ["frontend/src/components/CreateHoldForm.tsx"],
+          "description": "Form to create new hold with productId + quantity"
+        },
+        {
+          "id": "T7.5",
+          "name": "Active Holds list + Release button",
+          "loc": 120,
+          "depends": ["T7.2"],
+          "files": ["frontend/src/components/ActiveHoldsList.tsx"],
+          "description": "List of active holds with release action"
+        },
+        {
+          "id": "T7.6",
+          "name": "App shell + routing",
+          "loc": 60,
+          "depends": ["T7.3", "T7.4", "T7.5"],
+          "files": ["frontend/src/App.tsx", "frontend/src/main.tsx"],
+          "description": "Main layout with tabs/navigation"
+        }
+      ]
+    },
+    {
+      "id": "phase-8",
+      "name": "Documentation",
+      "tasks": [
+        {
+          "id": "T8.1",
+          "name": "AI-USAGE.md",
+          "loc": 60,
+          "depends": [],
+          "files": ["AI-USAGE.md"],
+          "description": "Document AI tool usage in development"
+        },
+        {
+          "id": "T8.2",
+          "name": "README.md",
+          "loc": 80,
+          "depends": ["T6.1"],
+          "files": ["README.md"],
+          "description": "Setup instructions, API docs, architecture overview"
+        }
+      ]
+    }
+  ]
+}

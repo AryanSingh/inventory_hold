@@ -1,0 +1,48 @@
+{
+  "entity": "Hold",
+  "collection": "holds",
+  "schema": {
+    "holdId": "string (GUID format, client-generated)",
+    "items": [
+      {
+        "productId": "string (GUID format)",
+        "productName": "string",
+        "quantity": "integer (> 0)"
+      }
+    ],
+    "status": "enum: Active | Released | Expired",
+    "createdAt": "DateTime UTC",
+    "expiresAt": "DateTime UTC",
+    "releasedAt": "DateTime UTC | null"
+  },
+  "operations": {
+    "create": {
+      "description": "Create a new hold record with Active status",
+      "input": {
+        "holdId": "string (GUID)",
+        "items": "array of { productId, productName, quantity }",
+        "durationMinutes": "integer (default: 15)"
+      },
+      "output": "Hold document with computed expiresAt"
+    },
+    "getById": {
+      "description": "Retrieve hold by HoldId",
+      "filter": { "holdId": "{holdId}" },
+      "returns": "Hold document or null"
+    },
+    "release": {
+      "description": "Mark hold as Released and set ReleasedAt",
+      "filter": { "holdId": "{holdId}", "status": "Active" },
+      "update": { "$set": { "status": "Released", "releasedAt": "now" } }
+    },
+    "findExpired": {
+      "description": "Find all Active holds where expiresAt <= now",
+      "filter": { "status": "Active", "expiresAt": { "$lte": "now" } }
+    },
+    "markExpired": {
+      "description": "Mark a hold as Expired",
+      "filter": { "holdId": "{holdId}" },
+      "update": { "$set": { "status": "Expired" } }
+    }
+  }
+}
