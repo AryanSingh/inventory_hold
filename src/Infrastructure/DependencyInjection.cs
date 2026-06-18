@@ -6,7 +6,6 @@ using Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
-using RabbitMQ.Client;
 
 namespace Infrastructure;
 
@@ -15,8 +14,12 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         // MongoDB
-        var mongoConnectionString = configuration.GetConnectionString("MongoDb") ?? "mongodb://localhost:27017";
-        var mongoClient = new MongoClient(mongoConnectionString);
+        var mongoConnectionString = configuration.GetConnectionString("MongoDb")
+            ?? throw new InvalidOperationException("Connection string 'MongoDb' is not configured.");
+        var mongoClientSettings = MongoClientSettings.FromConnectionString(mongoConnectionString);
+        mongoClientSettings.MaxConnectionPoolSize = 100;
+        mongoClientSettings.MinConnectionPoolSize = 10;
+        var mongoClient = new MongoClient(mongoClientSettings);
         var mongoDatabase = mongoClient.GetDatabase(configuration["MongoDb:DatabaseName"] ?? "inventory_hold_db");
 
         services.AddSingleton<IMongoClient>(mongoClient);
@@ -32,12 +35,11 @@ public static class DependencyInjection
         });
         services.AddScoped<ICacheService, RedisCacheService>();
 
-        // RabbitMQ
-        var rabbitMqConnectionString = configuration.GetConnectionString("RabbitMq") ?? "amqp://guest:guest@localhost:5672";
-        var factory = new ConnectionFactory { Uri = new Uri(rabbitMqConnectionString) };
-        var connection = factory.CreateConnectionAsync().GetAwaiter().GetResult();
-        services.AddSingleton<IConnection>(connection);
-        services.AddSingleton<IEventPublisher, RabbitMqPublisher>();
+        // RabbitMQ — lazy-initialized to avoid sync-over-async at startup
+        var rabbitMqConnectionString = configuration.GetConnectionString("RabbitMq")
+            ?? throw new InvalidOperationException("Connection string 'RabbitMq' is not configured.");
+        services.AddSingleton<IEventPublisher>(sp =>
+            new RabbitMqPublisher(rabbitMqConnectionString));
 
         // Background services
         services.AddHostedService<HoldExpirationService>();

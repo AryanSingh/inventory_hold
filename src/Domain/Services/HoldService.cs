@@ -175,14 +175,20 @@ public class HoldService
             throw new InvalidOperationException($"Hold is in {hold.Status} status.");
         }
 
-        // Restore inventory
+        // Mark as released FIRST (optimistic lock), then restore inventory.
+        // If status change fails, we throw before touching inventory.
+        // If inventory restore fails after status change, the hold is correctly released
+        // but inventory needs manual recovery — safer than double-incrementing.
+        hold.Release();
+        var released = await _holdRepository.ReleaseAsync(holdId);
+        if (!released)
+            throw new InvalidOperationException("Failed to release hold — concurrent modification.");
+
         foreach (var item in hold.Items)
         {
             await _inventoryRepository.IncrementAvailabilityAsync(item.ProductId, item.Quantity);
         }
 
-        hold.Release();
-        await _holdRepository.ReleaseAsync(holdId);
         await _cacheService.InvalidateInventoryAsync();
 
         var eventItems = hold.Items.Select(hi => new HoldItemDto

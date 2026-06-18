@@ -5,18 +5,21 @@ import { api } from '../api/client';
 export function InventoryDashboard() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
 
   const fetchInventory = async () => {
     try {
       setError('');
-      setLoading(true);
+      if (inventory.length === 0) setLoading(true);
+      else setRefreshing(true);
       const data = await api.getInventory();
       setInventory(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load inventory');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -32,8 +35,17 @@ export function InventoryDashboard() {
   return (
     <div className="card">
       <div className="card-header">
-        <h2>Inventory Levels</h2>
-        <button className="btn btn-sm" onClick={fetchInventory}>Refresh</button>
+        <h2>
+          Inventory Levels
+          <span style={{
+            animation: refreshing ? 'spin 1s linear infinite' : 'none',
+            display: 'inline-block',
+            marginLeft: '8px',
+            opacity: refreshing ? 1 : 0,
+            transition: 'opacity 0.2s'
+          }}>↻</span>
+        </h2>
+        <button className="btn btn-sm" onClick={() => fetchInventory()} disabled={refreshing}>{refreshing ? '...' : 'Refresh'}</button>
       </div>
       <table>
         <thead>

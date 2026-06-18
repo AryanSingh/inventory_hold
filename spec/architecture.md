@@ -2,19 +2,19 @@
 
 ## Overview
 
-A .NET 10 microservice implementing the Inventory Hold pattern for e-commerce checkout. When a customer begins checkout, items are temporarily held so they can't be sold to another customer. Holds expire after a configurable duration (default: 15 minutes).
+A .NET 8 microservice implementing the Inventory Hold pattern for e-commerce checkout. When a customer begins checkout, items are temporarily held so they can't be sold to another customer. Holds expire after a configurable duration (default: 15 minutes).
 
 ## Technology Stack
 
 | Component | Technology | Version |
 |-----------|-----------|---------|
-| API Runtime | .NET | 10.0 |
-| Language | C# | 13 |
+| API Runtime | .NET | 8.0 |
+| Language | C# | 12 |
 | Database | MongoDB | 7.0 |
 | Cache | Redis | 7.2 |
 | Message Broker | RabbitMQ | 3.13 |
-| Frontend | React + TypeScript + Vite | 18.x |
-| Testing | NUnit + Moq | 3.x / 4.x |
+| Frontend | React + TypeScript + Vite | 19.x |
+| Testing | xUnit + Moq | 3.x / 4.x |
 | Containerization | Docker + docker-compose | latest |
 
 ## DDD Layering
@@ -34,7 +34,7 @@ src/
 │   ├── Controllers/                  # HoldsController, InventoryController
 │   ├── Middleware/                    # Error handling middleware
 │   └── Program.cs                    # DI registration, app configuration
-└── InventoryHold.UnitTests/          # nUnit tests with Moq
+└── InventoryHold.UnitTests/          # xUnit tests with Moq
 ```
 
 **Dependency Rule:** Domain has zero infrastructure dependencies. Infrastructure implements Domain interfaces. WebApi references both.
@@ -126,5 +126,5 @@ A hosted service (`HoldExpirationService`) runs every 30 seconds:
 1. **HoldId as GUID string** — client-generated, no DB round-trip for ID
 2. **Soft expiration** — holds marked Expired, not deleted; audit trail preserved
 3. **Configurable TTL** — default 15min, override via `HOLD_DURATION_MINUTES` env var
-4. **No authentication** — per assignment requirements
+4. **JWT Bearer authentication** — implemented with configurable authority/audience
 5. **Seed data on startup** — 5 products inserted if inventory collection is empty

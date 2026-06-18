@@ -119,7 +119,8 @@ public class HoldsController : ControllerBase
         {
             _logger.LogInformation("Creating hold with {ItemCount} items", request.Items.Count);
             var hold = await _holdService.CreateHoldAsync(request);
-            _logger.LogInformation("Created hold {HoldId}", hold.HoldId);
+            _logger.LogInformation("Created hold {HoldId} at {CreatedAt}, expires {ExpiresAt}, items: {ItemCount}",
+                hold.HoldId, hold.CreatedAt, hold.ExpiresAt, hold.Items.Count);
             return CreatedAtAction(nameof(GetHold), new { holdId = hold.HoldId }, hold);
         }
         catch (ArgumentException ex)
@@ -164,6 +165,13 @@ public class HoldsController : ControllerBase
         }
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetActiveHolds()
+    {
+        var holds = await _holdService.GetActiveHoldsAsync();
+        return Ok(holds);
+    }
+
     [HttpGet("{holdId}")]
     public async Task<IActionResult> GetHold(string holdId)
     {
@@ -185,7 +193,9 @@ public class HoldsController : ControllerBase
     {
         try
         {
+            _logger.LogInformation("Releasing hold {HoldId}", holdId);
             var result = await _holdService.ReleaseHoldAsync(holdId);
+            _logger.LogInformation("Released hold {HoldId} at {ReleasedAt}", holdId, DateTime.UtcNow);
             return Ok(result);
         }
         catch (KeyNotFoundException ex)

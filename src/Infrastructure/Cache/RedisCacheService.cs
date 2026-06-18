@@ -2,21 +2,25 @@ using System.Text.Json;
 using Domain.Entities;
 using Domain.Interfaces;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Cache;
 
 public class RedisCacheService : ICacheService
 {
     private readonly IDistributedCache _cache;
+    private readonly DistributedCacheEntryOptions _cacheOptions;
     private const string CacheKey = "inventory:levels";
-    private static readonly DistributedCacheEntryOptions CacheOptions = new()
-    {
-        AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30)
-    };
 
-    public RedisCacheService(IDistributedCache cache)
+    public RedisCacheService(IDistributedCache cache, IConfiguration configuration)
     {
         _cache = cache;
+        var ttlValue = configuration["Cache:TTLSeconds"];
+        var ttlSeconds = int.TryParse(ttlValue, out var parsed) ? parsed : 30;
+        _cacheOptions = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(ttlSeconds)
+        };
     }
 
     public async Task<List<InventoryItem>?> GetInventoryAsync()
@@ -25,13 +29,22 @@ public class RedisCacheService : ICacheService
         if (string.IsNullOrEmpty(cached))
             return null;
 
-        return JsonSerializer.Deserialize<List<InventoryItem>>(cached);
+        try
+        {
+            return JsonSerializer.Deserialize<List<InventoryItem>>(cached);
+        }
+        catch (JsonException)
+        {
+            // Corrupted cache data — invalidate and treat as miss
+            await _cache.RemoveAsync(CacheKey);
+            return null;
+        }
     }
 
     public async Task SetInventoryAsync(List<InventoryItem> items)
     {
         var json = JsonSerializer.Serialize(items);
-        await _cache.SetStringAsync(CacheKey, json, CacheOptions);
+        await _cache.SetStringAsync(CacheKey, json, _cacheOptions);
     }
 
     public async Task InvalidateInventoryAsync()

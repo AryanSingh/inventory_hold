@@ -61,28 +61,29 @@ public class InventoryServiceTests
     public async Task SeedIfEmptyAsync_EmptyDatabase_SeedsFiveProducts()
     {
         // Arrange
-        _inventoryRepo.Setup(r => r.IsEmptyAsync()).ReturnsAsync(true);
-        _inventoryRepo.Setup(r => r.SeedAsync(It.IsAny<List<InventoryItem>>()))
+        _inventoryRepo.Setup(r => r.UpsertManyAsync(It.IsAny<List<InventoryItem>>()))
             .Returns(Task.CompletedTask);
 
         // Act
         await _sut.SeedIfEmptyAsync();
 
         // Assert
-        _inventoryRepo.Verify(r => r.SeedAsync(It.Is<List<InventoryItem>>(items =>
+        _inventoryRepo.Verify(r => r.UpsertManyAsync(It.Is<List<InventoryItem>>(items =>
             items.Count == 5)), Times.Once);
     }
 
     [Fact]
-    public async Task SeedIfEmptyAsync_DataExists_DoesNotSeed()
+    public async Task SeedIfEmptyAsync_DataExists_UpsertsIdempotently()
     {
         // Arrange
-        _inventoryRepo.Setup(r => r.IsEmptyAsync()).ReturnsAsync(false);
+        _inventoryRepo.Setup(r => r.UpsertManyAsync(It.IsAny<List<InventoryItem>>()))
+            .Returns(Task.CompletedTask);
 
         // Act
         await _sut.SeedIfEmptyAsync();
 
-        // Assert
-        _inventoryRepo.Verify(r => r.SeedAsync(It.IsAny<List<InventoryItem>>()), Times.Never);
+        // Assert — upsert is idempotent, always called regardless of existing data
+        _inventoryRepo.Verify(r => r.UpsertManyAsync(It.Is<List<InventoryItem>>(items =>
+            items.Count == 5)), Times.Once);
     }
 }

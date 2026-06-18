@@ -8,9 +8,8 @@ interface Props {
 }
 
 export function CreateHoldForm({ inventory, onHoldCreated }: Props) {
-  const [customerName, setCustomerName] = useState('');
-  const [customerEmail, setCustomerEmail] = useState('');
   const [items, setItems] = useState<CreateHoldItemRequest[]>([]);
+  const [durationMinutes, setDurationMinutes] = useState(15);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -38,10 +37,6 @@ export function CreateHoldForm({ inventory, onHoldCreated }: Props) {
     setError('');
     setSuccess('');
 
-    if (!customerName.trim() || !customerEmail.trim()) {
-      setError('Customer name and email are required');
-      return;
-    }
     if (items.length === 0) {
       setError('Add at least one item');
       return;
@@ -53,11 +48,10 @@ export function CreateHoldForm({ inventory, onHoldCreated }: Props) {
 
     setLoading(true);
     try {
-      await api.createHold({ customerName, customerEmail, items });
+      await api.createHold({ items, durationMinutes });
       setSuccess('Hold created successfully!');
-      setCustomerName('');
-      setCustomerEmail('');
       setItems([]);
+      setDurationMinutes(15);
       onHoldCreated();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to create hold');
@@ -74,27 +68,6 @@ export function CreateHoldForm({ inventory, onHoldCreated }: Props) {
       <form onSubmit={handleSubmit}>
         {error && <div className="error-banner">{error}</div>}
         {success && <div className="success-banner">{success}</div>}
-
-        <div className="form-row">
-          <div className="form-group">
-            <label>Customer Name</label>
-            <input
-              type="text"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="John Doe"
-            />
-          </div>
-          <div className="form-group">
-            <label>Customer Email</label>
-            <input
-              type="email"
-              value={customerEmail}
-              onChange={(e) => setCustomerEmail(e.target.value)}
-              placeholder="john@example.com"
-            />
-          </div>
-        </div>
 
         <div className="items-section">
           <h3>Items</h3>
@@ -128,7 +101,26 @@ export function CreateHoldForm({ inventory, onHoldCreated }: Props) {
           </button>
         </div>
 
-        <button type="submit" className="btn" disabled={loading}>
+        <div className="duration-section" style={{ marginTop: '1rem' }}>
+          <label htmlFor="duration" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 500 }}>
+            Hold Duration (minutes)
+          </label>
+          <input
+            id="duration"
+            type="number"
+            min={1}
+            max={1440}
+            step={15}
+            value={durationMinutes}
+            onChange={(e) => setDurationMinutes(Math.max(1, Math.min(1440, parseInt(e.target.value) || 15)))}
+            style={{ width: '120px', padding: '0.5rem', borderRadius: '4px', border: '1px solid #374151', background: '#1f2937', color: '#e5e7eb' }}
+          />
+          <small style={{ display: 'block', marginTop: '0.25rem', color: '#9ca3af', fontSize: '0.8rem' }}>
+            Default: 15 min. Maximum: 24 hours (1440 min)
+          </small>
+        </div>
+
+        <button type="submit" className="btn" disabled={loading} style={{ marginTop: '1rem' }}>
           {loading ? 'Creating...' : 'Create Hold'}
         </button>
       </form>

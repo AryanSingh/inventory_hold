@@ -8,6 +8,6 @@ public interface IInventoryRepository
     Task<InventoryItem?> GetByProductIdAsync(string productId);
     Task<bool> DecrementAvailabilityAsync(string productId, int quantity);
     Task IncrementAvailabilityAsync(string productId, int quantity);
-    Task SeedAsync(List<InventoryItem> items);
+    Task UpsertManyAsync(List<InventoryItem> items);
     Task<bool> IsEmptyAsync();
 }

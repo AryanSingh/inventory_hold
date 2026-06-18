@@ -6,39 +6,22 @@ import { api } from '../api/client';
 export function ActiveHoldsList({ refreshTrigger }: { refreshTrigger: number }) {
   const [holds, setHolds] = useState<Hold[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [releasing, setReleasing] = useState<string | null>(null);
 
-  const fetchHolds = async () => {
+  const fetchHolds = async (isRefresh = false) => {
     try {
       setError('');
-      setLoading(true);
-      // No list endpoint - fetch holds by stored IDs
-      // Store holds in localStorage for tracking, or use a different approach
-      // For now, we'll fetch from a stored list
-      const stored = localStorage.getItem('activeHolds');
-      if (stored) {
-        const holdIds: string[] = JSON.parse(stored);
-        const fetchedHolds: Hold[] = [];
-        for (const id of holdIds) {
-          try {
-            const hold = await api.getHold(id);
-            fetchedHolds.push(hold);
-          } catch {
-            // Hold may have been deleted/expired, skip it
-          }
-        }
-        setHolds(fetchedHolds);
-        // Clean up stored IDs for holds that no longer exist
-        const activeIds = fetchedHolds
-          .filter(h => h.status === HoldStatus.Active)
-          .map(h => h.holdId);
-        localStorage.setItem('activeHolds', JSON.stringify(activeIds));
-      }
+      if (isRefresh) setRefreshing(true);
+      else setLoading(true);
+      const fetchedHolds = await api.getActiveHolds();
+      setHolds(fetchedHolds);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load holds');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -47,6 +30,9 @@ export function ActiveHoldsList({ refreshTrigger }: { refreshTrigger: number }) 
   }, [refreshTrigger]);
 
   const handleRelease = async (holdId: string) => {
+    if (!window.confirm(`Release hold ${holdId.substring(0, 8)}...? Inventory will be restored.`)) {
+      return;
+    }
     setReleasing(holdId);
     try {
       await api.releaseHold(holdId);
@@ -84,7 +70,7 @@ export function ActiveHoldsList({ refreshTrigger }: { refreshTrigger: number }) 
     <div className="card">
       <div className="card-header">
         <h2>Active Holds</h2>
-        <button className="btn btn-sm" onClick={fetchHolds}>Refresh</button>
+        <button className="btn btn-sm" onClick={() => fetchHolds(true)} disabled={refreshing}>{refreshing ? '...' : 'Refresh'}</button>
       </div>
       {error && <div className="error-banner">{error}</div>}
       {holds.length === 0 ? (
@@ -94,7 +80,6 @@ export function ActiveHoldsList({ refreshTrigger }: { refreshTrigger: number }) 
           <thead>
             <tr>
               <th>Hold ID</th>
-              <th>Customer</th>
               <th>Items</th>
               <th>Status</th>
               <th>Created</th>
@@ -106,7 +91,6 @@ export function ActiveHoldsList({ refreshTrigger }: { refreshTrigger: number }) 
             {holds.map((hold) => (
               <tr key={hold.holdId} className={hold.status !== HoldStatus.Active ? 'row-muted' : ''}>
                 <td className="text-mono">{hold.holdId.substring(0, 8)}...</td>
-                <td>{hold.customerName}</td>
                 <td>
                   {hold.items.map((item, i) => (
                     <span key={i} className="item-tag">

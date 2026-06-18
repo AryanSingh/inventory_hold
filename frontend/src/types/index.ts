@@ -4,7 +4,7 @@ export interface InventoryItem {
   availableQuantity: number;
   reservedQuantity: number;
   totalQuantity: number;
-  lastUpdated: string;
+  updatedAt: string;
 }
 
 export interface HoldItem {
@@ -15,25 +15,24 @@ export interface HoldItem {
 
 export interface Hold {
   holdId: string;
-  customerName: string;
-  customerEmail: string;
   items: HoldItem[];
   status: HoldStatus;
   createdAt: string;
   expiresAt: string;
+  releasedAt?: string;
 }
 
 export const HoldStatus = {
-  Active: 0,
-  Released: 1,
-  Expired: 2,
+  Active: 'Active',
+  Released: 'Released',
+  Expired: 'Expired',
 } as const;
 export type HoldStatus = typeof HoldStatus[keyof typeof HoldStatus];
 
 export interface CreateHoldRequest {
-  customerName: string;
-  customerEmail: string;
+  holdId?: string;
   items: CreateHoldItemRequest[];
+  durationMinutes?: number;
 }
 
 export interface CreateHoldItemRequest {

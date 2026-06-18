@@ -181,11 +181,39 @@ public class HoldServiceTests
         // Assert
         Assert.Equal("Hold released successfully", result.Message);
         Assert.Equal(holdId, result.HoldId);
-        _inventoryRepo.Verify(r => r.IncrementAvailabilityAsync("prod-1", 3), Times.Once);
         _holdRepo.Verify(r => r.ReleaseAsync(holdId), Times.Once);
+        _inventoryRepo.Verify(r => r.IncrementAvailabilityAsync("prod-1", 3), Times.Once);
         _cacheService.Verify(c => c.InvalidateInventoryAsync(), Times.Once);
         _eventPublisher.Verify(e => e.PublishHoldReleasedAsync(
             holdId, It.IsAny<List<HoldItemDto>>(), It.IsAny<DateTime>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ReleaseHoldAsync_ConcurrentModification_ThrowsInvalidOperationException()
+    {
+        // Arrange — ReleaseAsync returns false (concurrent modification)
+        var holdId = "test-hold-concurrent";
+        var hold = new Hold
+        {
+            Id = Guid.NewGuid().ToString(),
+            HoldId = holdId,
+            Items = new List<HoldItem>
+            {
+                new() { ProductId = "prod-1", ProductName = "Widget", Quantity = 3 }
+            },
+            Status = HoldStatus.Active,
+            CreatedAt = DateTime.UtcNow.AddMinutes(-5),
+            ExpiresAt = DateTime.UtcNow.AddMinutes(10)
+        };
+
+        _holdRepo.Setup(r => r.GetByHoldIdAsync(holdId)).ReturnsAsync(hold);
+        _holdRepo.Setup(r => r.ReleaseAsync(holdId)).ReturnsAsync(false);
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _sut.ReleaseHoldAsync(holdId));
+        Assert.Contains("concurrent modification", ex.Message);
+        // Inventory should NOT be restored since status change failed
+        _inventoryRepo.Verify(r => r.IncrementAvailabilityAsync(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
     }
 
     [Fact]

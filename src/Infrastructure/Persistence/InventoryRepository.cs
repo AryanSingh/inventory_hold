@@ -52,9 +52,21 @@ public class InventoryRepository : IInventoryRepository
         await _context.Inventory.UpdateOneAsync(filter, update);
     }
 
-    public async Task SeedAsync(List<InventoryItem> items)
+    public async Task UpsertManyAsync(List<InventoryItem> items)
     {
-        await _context.Inventory.InsertManyAsync(items);
+        var bulkOps = items.Select(item => new UpdateOneModel<InventoryItem>(
+            Builders<InventoryItem>.Filter.Eq(i => i.ProductId, item.ProductId),
+            Builders<InventoryItem>.Update
+                .SetOnInsert(i => i.Id, item.Id)
+                .Set(i => i.ProductId, item.ProductId)
+                .Set(i => i.ProductName, item.ProductName)
+                .Set(i => i.AvailableQuantity, item.AvailableQuantity)
+                .Set(i => i.ReservedQuantity, item.ReservedQuantity)
+                .Set(i => i.TotalQuantity, item.TotalQuantity)
+                .Set(i => i.UpdatedAt, item.UpdatedAt)
+        ) { IsUpsert = true }).ToList();
+
+        await _context.Inventory.BulkWriteAsync(bulkOps, new BulkWriteOptions { IsOrdered = false });
     }
 
     public async Task<bool> IsEmptyAsync()

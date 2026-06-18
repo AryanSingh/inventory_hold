@@ -25,6 +25,11 @@ export const api = {
     return handleResponse<Hold>(res);
   },
 
+  async getActiveHolds(): Promise<Hold[]> {
+    const res = await fetch(`${API_BASE}/holds`);
+    return handleResponse<Hold[]>(res);
+  },
+
   async getHold(holdId: string): Promise<Hold> {
     const res = await fetch(`${API_BASE}/holds/${holdId}`);
     return handleResponse<Hold>(res);
